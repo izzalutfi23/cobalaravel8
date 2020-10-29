@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use DataTables;
 
 class Blogcontroller extends Controller
 {
@@ -13,13 +14,22 @@ class Blogcontroller extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $blog = Blog::latest()->paginate(1);
-        $data = [
-            'blogs' => $blog
-        ];
-        return view('index', $data);
+        if ($request->ajax()) {
+            $data = Blog::latest()->get();
+            return Datatables::of($data)
+                    ->addIndexColumn()
+                    ->addColumn('action', function($row){
+                           $btn = '<button class="btn btn-primary btn-sm edit" data-id="'.$row->id.'" data-target="#edit" data-toggle="modal">Edit</button>';
+                           $btn = $btn.'<a href="javascript:void(0)"  data-id="'.$row->id.'" class="btn btn-danger btn-sm ml-1 hapus">Delete</a>';
+                            return $btn;
+                    })
+                    ->rawColumns(['action'])
+                    ->make(true);
+        }
+
+        return view('index');
     }
 
     /**
@@ -29,7 +39,7 @@ class Blogcontroller extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
@@ -40,7 +50,23 @@ class Blogcontroller extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validate($request, [
+            'image'     => 'required|image|mimes:png,jpg,jpeg',
+            'title'     => 'required',
+            'content'   => 'required'
+        ]);
+    
+        $image = $request->file('image');
+        $image->storeAs('public/blogs', $image->hashName());
+    
+        Blog::create([
+            'image'     => $image->hashName(),
+            'title'     => $request->title,
+            'content'   => $request->content
+        ]);
+
+        return response()->json(['success'=>'Data berhasil disimpan.']);
+
     }
 
     /**
@@ -85,6 +111,7 @@ class Blogcontroller extends Controller
      */
     public function destroy(Blog $blog)
     {
-        //
+        Blog::destroy($blog->id);
+        return response()->json(['success'=>'Data berhasil dihapus.']);
     }
 }
