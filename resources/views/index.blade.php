@@ -74,7 +74,7 @@
 
                                         <div class="form-group">
                                             <label class="font-weight-bold">JUDUL</label>
-                                            <input type="text" id="title"
+                                            <input type="text"
                                                 class="form-control @error('title') is-invalid @enderror" name="title"
                                                 value="{{ old('title') }}" placeholder="Masukkan Judul Blog">
 
@@ -89,6 +89,80 @@
                                         <div class="form-group">
                                             <label class="font-weight-bold">KONTEN</label>
                                             <textarea class="form-control @error('content') is-invalid @enderror"
+                                                name="content" rows="5"
+                                                placeholder="Masukkan Konten Blog">{{ old('content') }}</textarea>
+
+                                            <!-- error message untuk content -->
+                                            @error('content')
+                                            <div class="alert alert-danger mt-2">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+
+                                        <button type="submit" id="saveBtn"
+                                            class="btn btn-md btn-primary">SIMPAN</button>
+                                        <button type="reset" class="btn btn-md btn-warning">RESET</button>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End modal -->
+
+    <!-- Modal Edit -->
+    <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Blog</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-0 shadow rounded">
+                                <div class="card-body">
+                                    <form id="formtambah" type="post" enctype="multipart/form-data">
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">GAMBAR</label>
+                                            <input type="file" id="image"
+                                                class="form-control @error('image') is-invalid @enderror" name="image">
+
+                                            <!-- error message untuk title -->
+                                            @error('image')
+                                            <div class="alert alert-danger mt-2">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">JUDUL</label>
+                                            <input type="hidden" name="id" id="id_blog">
+                                            <input type="text" id="title" class="form-control @error('title') is-invalid @enderror" name="title"
+                                                value="{{ old('title') }}" placeholder="Masukkan Judul Blog">
+
+                                            <!-- error message untuk title -->
+                                            @error('title')
+                                            <div class="alert alert-danger mt-2">
+                                                {{ $message }}
+                                            </div>
+                                            @enderror
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">KONTEN</label>
+                                            <textarea id="content" class="form-control @error('content') is-invalid @enderror"
                                                 name="content" rows="5"
                                                 placeholder="Masukkan Konten Blog">{{ old('content') }}</textarea>
 
@@ -174,6 +248,9 @@
                     cache: false,
                     contentType: false,
                     processData: false,
+                    beforeSend: function() { 
+                        $("#saveBtn").prop('disabled', true); // disable button
+                    },
                     success: function (data) {
                         table.draw();
                         $('#formtambah').trigger("reset");
@@ -181,6 +258,7 @@
                             type: "click"
                         });
                         toastr.success('Data berhasil ditambahkan');
+                        $("#saveBtn").prop('disabled', false);
                     },
                     error: function (data) {
                         console.log('Error:', data);
@@ -205,6 +283,15 @@
                         }
                     });
                 }
+            });
+
+            $('body').on('click', '.edit', function () {
+                var blog_id = $(this).data('id');
+                $.get("{{ url('/blog') }}" + '/' + blog_id, function (data) {
+                    $('#id_blog').val(blog_id);
+                    $('#title').val(data.title);
+                    $('#content').val(data.content);
+                })
             });
             
         });

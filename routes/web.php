@@ -22,4 +22,4 @@ Route::get('/blog', [Blogcontroller::class, 'index']);
 // Route::get('/blog/create', [Blogcontroller::class, 'create']);
 Route::post('/blog/store', [Blogcontroller::class, 'store']);
 Route::delete('/blog/destroy/{blog}', [Blogcontroller::class, 'destroy']);
-// Route::get('/home/{blog}', [Blogcontroller::class, 'show']);
+Route::get('/blog/{blog}', [Blogcontroller::class, 'show']);
