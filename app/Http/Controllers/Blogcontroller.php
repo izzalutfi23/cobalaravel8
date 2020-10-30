@@ -100,7 +100,30 @@ class Blogcontroller extends Controller
      */
     public function update(Request $request, Blog $blog)
     {
-        //
+        $this->validate($request, [
+            'image'     => 'image|mimes:png,jpg,jpeg',
+            'title'     => 'required',
+            'content'   => 'required'
+        ]);
+
+        if($request->hasFile('image')){
+            $image = $request->file('image');
+            $image->storeAs('public/blogs', $image->hashName());
+        
+            Blog::where('id', $request->id)->update([
+                'image'     => $image->hashName(),
+                'title'     => $request->title,
+                'content'   => $request->content
+            ]);
+        }
+        else{
+            Blog::where('id', $request->id)->update([
+                'title'     => $request->title,
+                'content'   => $request->content
+            ]);
+        }
+
+        return response()->json(['success'=>'Data berhasil disimpan.']);
     }
 
     /**

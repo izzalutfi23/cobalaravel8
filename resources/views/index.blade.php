@@ -74,9 +74,9 @@
 
                                         <div class="form-group">
                                             <label class="font-weight-bold">JUDUL</label>
-                                            <input type="text"
-                                                class="form-control @error('title') is-invalid @enderror" name="title"
-                                                value="{{ old('title') }}" placeholder="Masukkan Judul Blog">
+                                            <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                                name="title" value="{{ old('title') }}"
+                                                placeholder="Masukkan Judul Blog">
 
                                             <!-- error message untuk title -->
                                             @error('title')
@@ -131,50 +131,27 @@
                         <div class="col-md-12">
                             <div class="card border-0 shadow rounded">
                                 <div class="card-body">
-                                    <form id="formtambah" type="post" enctype="multipart/form-data">
+                                    <form id="formedit" enctype="multipart/form-data">
 
                                         <div class="form-group">
                                             <label class="font-weight-bold">GAMBAR</label>
-                                            <input type="file" id="image"
-                                                class="form-control @error('image') is-invalid @enderror" name="image">
-
-                                            <!-- error message untuk title -->
-                                            @error('image')
-                                            <div class="alert alert-danger mt-2">
-                                                {{ $message }}
-                                            </div>
-                                            @enderror
+                                            <input type="file" id="imageedit" class="form-control" name="image">
                                         </div>
 
                                         <div class="form-group">
                                             <label class="font-weight-bold">JUDUL</label>
                                             <input type="hidden" name="id" id="id_blog">
-                                            <input type="text" id="title" class="form-control @error('title') is-invalid @enderror" name="title"
-                                                value="{{ old('title') }}" placeholder="Masukkan Judul Blog">
-
-                                            <!-- error message untuk title -->
-                                            @error('title')
-                                            <div class="alert alert-danger mt-2">
-                                                {{ $message }}
-                                            </div>
-                                            @enderror
+                                            <input type="text" id="title" class="form-control" name="title"
+                                                placeholder="Masukkan Judul Blog">
                                         </div>
 
                                         <div class="form-group">
                                             <label class="font-weight-bold">KONTEN</label>
-                                            <textarea id="content" class="form-control @error('content') is-invalid @enderror"
-                                                name="content" rows="5"
-                                                placeholder="Masukkan Konten Blog">{{ old('content') }}</textarea>
-
-                                            <!-- error message untuk content -->
-                                            @error('content')
-                                            <div class="alert alert-danger mt-2">
-                                                {{ $message }}
-                                            </div>
-                                            @enderror
+                                            <textarea id="content" class="form-control" name="content" rows="5"
+                                                placeholder="Masukkan Konten Blog"></textarea>
                                         </div>
 
-                                        <button type="submit" id="saveBtn"
+                                        <button type="submit" id="editBtn"
                                             class="btn btn-md btn-primary">SIMPAN</button>
                                         <button type="reset" class="btn btn-md btn-warning">RESET</button>
 
@@ -197,7 +174,6 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
     <script type="text/javascript">
-
         $(function () {
             $.ajaxSetup({
                 headers: {
@@ -248,7 +224,7 @@
                     cache: false,
                     contentType: false,
                     processData: false,
-                    beforeSend: function() { 
+                    beforeSend: function () {
                         $("#saveBtn").prop('disabled', true); // disable button
                     },
                     success: function (data) {
@@ -263,6 +239,46 @@
                     error: function (data) {
                         console.log('Error:', data);
                         $('#saveBtn').html('Save Changes');
+                    }
+                });
+            });
+
+            $('body').on('click', '.edit', function () {
+                var blog_id = $(this).data('id');
+                $.get("{{ url('/blog') }}" + '/' + blog_id, function (data) {
+                    $('#id_blog').val(blog_id);
+                    $('#title').val(data.title);
+                    $('#content').val(data.content);
+                })
+            });
+
+            $('#formedit').submit(function (e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                formData.append('_method', 'patch'); 
+                var id_blog = $('#formedit').find('input[name="id"]').val();
+                $.ajax({
+                    type: "POST",
+                    data: formData,
+                    url: "{{ url('/blog') }}" + '/' + id_blog,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    beforeSend: function () {
+                        $("#editBtn").prop('disabled', true); // disable button
+                    },
+                    success: function (data) {
+                        table.draw();
+                        $('#formedit').trigger("reset");
+                        $("[data-dismiss=modal]").trigger({
+                            type: "click"
+                        });
+                        toastr.success('Data berhasil diedit');
+                        $("#editBtn").prop('disabled', false);
+                    },
+                    error: function (data) {
+                        console.log('Error:', data);
+                        $('#editBtn').html('Save Changes');
                     }
                 });
             });
@@ -285,15 +301,6 @@
                 }
             });
 
-            $('body').on('click', '.edit', function () {
-                var blog_id = $(this).data('id');
-                $.get("{{ url('/blog') }}" + '/' + blog_id, function (data) {
-                    $('#id_blog').val(blog_id);
-                    $('#title').val(data.title);
-                    $('#content').val(data.content);
-                })
-            });
-            
         });
 
     </script>
